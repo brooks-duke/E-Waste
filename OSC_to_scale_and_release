@@ -1,0 +1,10 @@
+live_loop :synth1 do
+  use_synth :dsaw
+  inosc = get "/osc/note"
+  pitch = inosc[0]
+  oscrel = inosc[1] / 10.0
+  pscale = (scale :e3, :minor, num_octaves: 3)
+  n=pscale[pitch]
+  play n, release: oscrel
+  sleep 0.5
+end
