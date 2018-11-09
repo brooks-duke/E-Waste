@@ -1,0 +1,65 @@
+chords_1_amp = 3
+synth_1_amp = 0.3
+synth_2_amp = 0.3
+
+
+
+live_loop :chords1 do
+  use_synth :hollow
+  if (spread 3, 14).tick then
+    play chord(:e4, :major7), attack: 0.5, amp: chords_1_amp, release: 5
+  end
+  sleep 1
+end
+
+live_loop :synth1 do
+  use_synth :mod_sine
+  inosc = get "/osc/note"
+  
+  #sleep = z
+  in_sleep = inosc[2]
+  sleep_range = (range 0.25, 1.0, 0.035714)
+  sleep_time = sleep_range[in_sleep]
+  
+  if (spread 4, 13).tick then
+    #pitch = x
+    pitch = inosc[0]
+    pscale = (scale :e3, :lydian, num_octaves: 3)
+    n=pscale[pitch]
+    
+    #release = y
+    oscrel = inosc[1] / 3.0
+    
+    with_fx :reverb, room: 1 do
+      play n, release: oscrel, attack: 0.1, pan: -1, amp: synth_1_amp
+    end
+  end
+  sleep sleep_time
+end
+
+
+
+live_loop :synth2 do
+  use_synth :mod_pulse
+  inosc = get "/osc/note"
+  
+  #sleep = z
+  in_sleep = inosc[1]
+  sleep_range = (range 0.25, 1.0, 0.035714)
+  sleep_time = sleep_range[in_sleep]
+  
+  if (spread 5, 13).tick then
+    #pitch = x
+    pitch = inosc[2]
+    pscale = (scale :e2, :lydian, num_octaves: 3)
+    n=pscale[pitch]
+    
+    #release = y
+    oscrel = inosc[0] / 4.0
+    
+    with_fx :reverb, room: 1 do
+      play n, release: oscrel, attack: 0.1, pan: 1, amp: synth_2_amp
+    end
+  end
+  sleep sleep_time
+end
