@@ -1,0 +1,31 @@
+live_loop :leadR do
+  inosc = get "/osc/note"
+  
+  sn = synth :prophet, release: 3, pan: 0
+  n = (scale :f4, :major, num_octs: 3)
+  lead_sleep = (ring, 0.25)
+  
+  rand_seed = inosc[2]
+  use_random_seed = rand_seed
+  
+  synth_filter = inosc[0]
+  filter_range = range(70, 120, 1)
+  use_synth_filter = filter_range[synth_filter]
+  
+  synth_pan = inosc[1]
+  pan_range = range(-1.0, 1.0, 0.02)
+  use_pan = pan_range[synth_pan]
+  
+  count=0
+  
+  
+  with_fx :echo, phase: 0.125, decay: 1 do
+    count=+count
+    control sn, cutoff: use_synth_filter, amp: 1, pan: use_pan, note: n.choose
+    sleep lead_sleep.choose
+    if count=4 then
+      use_random_seed = rand_seed
+      count=0
+    end
+  end
+end
