@@ -1,0 +1,40 @@
+live_loop :leadR do
+  with_fx :echo, phase: 0.125, decay: 3 do
+    with_synth :prophet do
+      
+      inosc = get "/osc/note"
+      
+      synth_filter = inosc[0]
+      filter_range = range(70, 120, 1)
+      use_synth_filter = filter_range[synth_filter]
+      
+      synth_pan = inosc[1]
+      pan_range = range(-1.0, 1.0, 0.02)
+      use_pan = pan_range[synth_pan]
+      
+      synth_direction = inosc[1]
+      arp_set = inosc[1]
+      
+      sn = synth :prophet, release: 3, pan: 0
+      n = (scale :c4, :major, num_octs: 3)
+      lead_sleep = (ring, 0.25, 0.25)
+      
+      if synth_direction <= 24 then
+        arp_root = arp_set
+        control sn, cutoff: use_synth_filter, amp: 1, pan: use_pan, note: n[arp_set]
+        sleep lead_sleep.choose
+        control sn, cutoff: use_synth_filter, amp: 1, pan: use_pan, note: n[arp_set-2]
+        sleep lead_sleep.choose
+        control sn, cutoff: use_synth_filter, amp: 1, pan: use_pan, note: n[arp_set-4]
+        sleep lead_sleep.choose
+      else
+        control sn, cutoff: use_synth_filter, amp: 1, pan: use_pan, note: n[arp_set]
+        sleep lead_sleep.choose
+        control sn, cutoff: use_synth_filter, amp: 1, pan: use_pan, note: n[arp_set+2]
+        sleep lead_sleep.choose
+        control sn, cutoff: use_synth_filter, amp: 1, pan: use_pan, note: n[arp_set+4]
+        sleep lead_sleep.choose
+      end
+    end
+  end
+end
