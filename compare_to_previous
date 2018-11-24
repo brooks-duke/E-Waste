@@ -1,0 +1,21 @@
+## compares the current number w the previous number,
+## only plays when numbers are different.
+
+in_thread do
+  prev_note=0
+  live_loop :syncnote do
+    use_synth :blade
+    key = (scale :C3, :major, num_octaves: 4)
+    inosc = get "/osc/note"
+    sel_note = inosc[0]
+    
+    if sel_note == prev_note then
+      prev_note = sel_note
+      sleep 0.125
+    else
+      play key[sel_note], amp: 1
+      prev_note = sel_note
+      sleep 0.125
+    end
+  end
+end
