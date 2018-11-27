@@ -1,0 +1,105 @@
+in_thread do
+  prev_note=0
+  live_loop :syncnote do
+    with_fx :reverb, damp: 0.7, mix: 0.7 do
+      with_fx :echo, phase: 0.5, decay: 2 do
+        
+        use_synth :fm
+        key = (scale :C2, :major, num_octaves: 7)
+        inosc = get "/osc/note"
+        sel_note = inosc[0]
+        
+        if sel_note == prev_note then
+          prev_note = sel_note
+          sleep 0.25
+          
+        else
+          play key[sel_note], amp: (ring 1, 0.75, 0.66, 0.5, 0.33).choose, release: (ring 1, 2, 1.5, 2.5).choose, attack: 0.5
+          prev_note = sel_note
+          sleep (ring 0.5, 0.666, 0.75).choose
+        end
+      end
+    end
+  end
+end
+
+live_loop :voice1 do
+  inosc = get "/osc/note"
+  v1_pan_raw = inosc[1]
+  v1_pan_range = (range -1, 1, 0.04)
+  v1_pan = v1_pan_range[v1_pan_raw]
+  with_fx :slicer, wave: (ring 0, 2, 3).choose, phase: (ring 0.25, 0.33, 0.5).choose do
+    with_fx :rhpf, cutoff: (range 65, 100, 2).mirror.tick do
+      sample :ambi_glass_hum, amp: 1, rate: 1, pan: v1_pan, pitch: (ring 3, 7, 10, 12).choose
+      sleep (ring 2, 3, 4).choose
+    end
+  end
+end
+
+live_loop :voice2 do
+  inosc = get "/osc/note"
+  v2_pan_raw = inosc[1]
+  v2_pan_range = (range 1, -1, 0.04)
+  v2_pan = v2_pan_range[v2_pan_raw]
+  with_fx :slicer, wave: (ring 0, 2, 3).choose, phase: (ring 0.25, 0.33, 0.5).choose do
+    with_fx :rhpf, cutoff: (range 65, 100, 2).mirror.tick do
+      sample :ambi_glass_hum, amp: 1, rate: 1, pan: v2_pan, pitch: (ring 3, 7, 10, 12).choose
+      sleep (ring 2, 3, 4).choose
+    end
+  end
+end
+
+live_loop :voicehigh do
+  with_fx :slicer, wave: 0, phase: 0.125 do
+    with_fx :rhpf, cutoff: (range 65, 100, 2.5).mirror.tick do
+      sample :ambi_glass_hum, amp: 1, rate: 2, pan: -1, pitch: 3
+      sleep (ring 7.25, 6.25, 5.25).choose
+    end
+  end
+end
+
+live_loop :voicehigh2 do
+  with_fx :slicer, wave: 0, phase: 0.125 do
+    with_fx :reverb, mix: 0, damp: 0.25, room: 1 do
+      with_fx :rhpf, cutoff: (range 65, 100, 2.5).mirror.tick do
+        sample :ambi_glass_hum, amp: 1, rate: (ring 2, 2.25, 2.333).choose, pan: 1, pitch: 3
+        sleep (ring 7.25, 6.25, 5.25).choose
+      end
+    end
+  end
+end
+
+live_loop :bass1 do
+  inosc = get "/osc/note"
+  sli_mix=inosc[2]
+  sli_mix_range=(range 0, 1, 0.2)
+  sli_mix_sel=sli_mix_range[sli_mix]
+  with_fx :rlpf, cutoff: 50 do
+    with_fx :slicer, phase: (ring 0.25, 0.33, 0.5, 0.666).choose, mix: sli_mix_sel do
+      with_fx :reverb, mix: 0.3, damp: 0.3 do
+        use_synth :sine
+        play (ring :c2, :c3, :g2, :f2, :a1, :g1).choose, amp: 1, pan: 0, decay: 2.5, sustain: 0.5, release: 0.01, attack: 0.1
+        sleep (ring 6, 5.75, 6.25).choose
+      end
+    end
+  end
+end
+
+live_loop :bass2 do
+  inosc = get "/osc/note"
+  sli_mix=inosc[2]
+  sli_mix_range=(range 0, 1, 0.2)
+  sli_mix_sel=sli_mix_range[sli_mix]
+  with_fx :slicer, phase: (ring 0.25, 0.33, 0.5, 0.666).choose, mix: sli_mix_sel do
+    with_fx :rlpf, cutoff: 60 do
+      with_fx :reverb, mix: 0.3, damp: 0.3 do
+        use_synth :sine
+        play (ring :c3, :c4, :g3, :f3, :a2).choose, amp: 0.75, pan: 0, decay: 1.5, sustain: 0.5, release: 0.01
+        sleep (ring 5, 5.75, 5.25).choose
+      end
+    end
+  end
+end
+
+
+
