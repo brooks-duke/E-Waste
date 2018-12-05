@@ -1,0 +1,196 @@
+## compares the current number w the previous number,
+## only plays when numbers are different.
+
+## mixer
+
+## 0 = Synth 1 pitch
+## 1 =
+## 2 =
+
+## 3 = Synth 2 pitch
+## 4 =
+## 5 =
+
+syncnote_amp = 0.75
+voice1_amp = 2
+voice2_amp = 2
+voicehigh1_amp = 2
+voicehigh2_amp = 2
+bass1_amp = 0.65
+bass2_amp = 0.5
+
+
+in_thread do
+  prev_note=0
+  live_loop :syncnote1 do
+    inosc = get "/osc/list"
+    sli_mix=inosc[2]
+    sli_mix_range=(range 0, 0.5, 0.1)
+    sli_mix_sel=sli_mix_range[sli_mix]
+    with_fx :reverb, damp: 0.7, mix: 0.7 do
+      with_fx :echo, phase: 0.125, decay: 2, mix: 0.5 do
+        with_fx :rlpf, cutoff: 80, res: 0.7 do
+          use_synth :mod_pulse
+          key = (scale :C3, :major, num_octaves: 3)
+          sel_note = inosc[0]
+          
+          if sel_note == prev_note then
+            prev_note = sel_note
+            sleep 0.25
+            
+          else
+            play key[sel_note], amp: (ring 0.75, 0.66, 0.5, 0.33).choose, release: (ring 0.5, 0.75, 1).choose, attack: 0.5, amp: syncnote_amp, pulse_width: (ring 0.1, 0.5, 0.99).choose, pan: 1
+            sleep 0.125
+            play key[sel_note-7], amp: (ring 0.75, 0.66, 0.5, 0.33).choose, release: (ring 0.5, 0.75, 1).choose, attack: 0.5, amp: syncnote_amp, pulse_width: (ring 0.1, 0.5, 0.99).choose, pan: 1
+            sleep 0.125
+            prev_note = sel_note
+          end
+        end
+      end
+    end
+  end
+end
+
+
+in_thread do
+  prev_note=0
+  live_loop :syncnote2 do
+    inosc = get "/osc/list"
+    sli_mix=inosc[5]
+    sli_mix_range=(range 0, 0.5, 0.1)
+    sli_mix_sel=sli_mix_range[sli_mix]
+    with_fx :reverb, damp: 0.7, mix: 0.2 do
+      with_fx :echo, phase: 0.125, decay: 2, mix: 0.5 do
+        with_fx :rlpf, cutoff: 80, res: 0.7 do
+          
+          use_synth :mod_pulse
+          key = (scale :C2, :major, num_octaves: 4)
+          sel_note = inosc[3]
+          
+          if sel_note == prev_note then
+            prev_note = sel_note
+            sleep 0.25
+            
+          else
+            play key[sel_note], amp: (ring 0.75, 0.66, 0.5, 0.33).choose, release: (ring 0.5, 0.75, 1).choose, attack: 0.5, amp: syncnote_amp, pulse_width: (ring 0.1, 0.5, 0.99).choose, pan: -1
+            sleep 0.125
+            play key[sel_note+7], amp: (ring 0.75, 0.66, 0.5, 0.33).choose, release: (ring 0.5, 0.75, 1).choose, attack: 0.5, amp: syncnote_amp, pulse_width: (ring 0.1, 0.5, 0.99).choose, pan: -1
+            sleep 0.125
+            prev_note = sel_note
+          end
+        end
+      end
+    end
+  end
+end
+
+
+live_loop :voice1 do
+  inosc = get "/osc/list"
+  v1_pan_raw = inosc[1]
+  v1_pan_range = (range -1, 1, 0.04)
+  v1_pan = v1_pan_range[v1_pan_raw]
+  with_fx :slicer, wave: (ring 0, 2, 3).choose, phase: (ring 0.25, 0.33, 0.5).choose do
+    with_fx :rhpf, cutoff: (range 65, 100, 2).mirror.tick do
+      sample :ambi_glass_hum, amp: voice1_amp, rate: 1, pan: v1_pan, pitch: (ring 3, 7, 10, 12).choose
+      sleep (ring 2, 3, 4).choose
+      sleep (ring 4, 6, 8).choose
+    end
+  end
+end
+
+live_loop :voicehigh1 do
+  with_fx :slicer, wave: 0, phase: 0.125 do
+    with_fx :reverb, mix: 0.5, damp: 0.25, room: 1 do
+      with_fx :rhpf, cutoff: (range 65, 100, 2.5).mirror.tick do
+        sleep (ring 7.25, 6.25, 5.25).choose
+        sample :ambi_glass_hum, amp: voicehigh1_amp, rate: 2, pan: -1, pitch: 3, attack: 1
+        sleep (ring 7.25, 6.25, 5.25).choose
+      end
+    end
+  end
+end
+
+
+live_loop :voicehigh2 do
+  with_fx :slicer, wave: 0, phase: 0.125 do
+    with_fx :reverb, mix: 0.5, damp: 0.25, room: 1 do
+      with_fx :rhpf, cutoff: (range 65, 100, 2.5).mirror.tick do
+        sleep (ring 7.25, 6.25, 5.25).choose
+        sample :ambi_glass_hum, amp: voicehigh2_amp, rate: (ring 2, 2.25, 2.333).choose, pan: 1, pitch: 3, attack: 1
+        sleep (ring 7.25, 6.25, 5.25).choose
+      end
+    end
+  end
+end
+
+
+live_loop :voicehigh2 do
+  with_fx :slicer, wave: 0, phase: 0.125 do
+    with_fx :reverb, mix: 0.5, damp: 0.25, room: 1 do
+      with_fx :rhpf, cutoff: (range 65, 100, 2.5).mirror.tick do
+        sample :ambi_glass_hum, amp: voicehigh2_amp, rate: (ring 2, 2.25, 2.333).choose, pan: 1, pitch: 3
+        sleep (ring 7.25, 6.25, 5.25).choose
+        sleep (ring 7.25, 6.25, 5.25).choose
+      end
+    end
+  end
+end
+
+live_loop :chords do
+  with_fx :rlpf do |rlpf|
+    with_fx :rhpf do |rhpf|
+      inosc = get "/osc/list"
+      chord_root = inosc[2]
+      if chord_root.even?
+        sleep 2
+        use_synth :prophet
+        control rlpf, cutoff: (ring 68, 70, 72, 74, 76, 78, 80, 82).choose, res: 0.8
+        control rhpf, cutoff: (ring 28, 30, 32, 34, 36, 38).choose, res: 0.5
+        play_chord (chord (ring :C4, :C5).choose, :major), sustain: 2, attack: 0.5
+        sleep 3
+      else
+        sleep 2
+        use_synth :prophet
+        control rlpf, cutoff: (ring 68, 70, 72, 74, 76, 78, 80, 82).choose, res: 0.8
+        control rhpf, cutoff: (ring 28, 30, 32, 34, 36, 38).choose, res: 0.5
+        play_chord (chord (ring :F4, :F5).choose, :major), sustain: 2, attack: 0.5
+        sleep 3
+      end
+    end
+  end
+end
+
+live_loop :bass1 do
+  inosc = get "/osc/list"
+  sli_mix=inosc[5]
+  sli_mix_range=(range 0, 1, 0.2)
+  sli_mix_sel=sli_mix_range[sli_mix]
+  with_fx :rlpf, cutoff: 50 do
+    with_fx :slicer, phase: (ring 0.25, 0.33, 0.5, 0.666).choose, mix: sli_mix_sel do
+      with_fx :reverb, mix: 0.2, damp: 0.5 do
+        sleep (ring 6, 5.75, 6.25).choose
+        use_synth :sine
+        play (ring :c2, :c3, :g2, :f2, :a1, :g1).choose, amp: bass1_amp, pan: 0, decay: 2.5, sustain: 0.5, release: 0.05, attack: 0.1
+        sleep (ring 6, 5.75, 6.25).choose
+      end
+    end
+  end
+end
+
+live_loop :bass2 do
+  inosc = get "/osc/list"
+  sli_mix=inosc[2]
+  sli_mix_range=(range 0, 1, 0.2)
+  sli_mix_sel=sli_mix_range[sli_mix]
+  with_fx :slicer, phase: (ring 0.25, 0.33, 0.5, 0.666).choose, mix: sli_mix_sel do
+    with_fx :rlpf, cutoff: 60 do
+      with_fx :reverb, mix: 0.2, damp: 0.4 do
+        sleep (ring 5, 5.75, 5.25).choose
+        use_synth :sine
+        play (ring :c3, :c4, :g3, :f3, :a2, :b3).choose, amp: bass2_amp, pan: 0, decay: 1.5, sustain: 0.5, release: 0.5
+        sleep (ring 5, 5.75, 5.25).choose
+      end
+    end
+  end
+end
